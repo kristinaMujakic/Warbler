@@ -25,9 +25,6 @@ toolbar = DebugToolbarExtension(app)
 with app.app_context():
     connect_db(app)
 
-HEADER_IMG = '/static/images/warbler-logo.png'
-PROFILE_IMG = '/static/images/warbler-hero.jpg'
-
 ##############################################################################
 # User signup/login/logout
 
@@ -232,8 +229,8 @@ def profile():
             user.email = form.email.data
             user.location = form.location.data
             user.bio = form.bio.data
-            user.image_url = form.image_url.data or PROFILE_IMG
-            user.header_image_url = form.header_image_url.data or HEADER_IMG
+            user.image_url = form.image_url.data or "/static/images/default-pic.png"
+            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
 
             db.session.commit()
 

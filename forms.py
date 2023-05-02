@@ -25,10 +25,8 @@ class UserEditForm(FlaskForm):
     location = StringField('Location', validators=[Optional()])
     bio = TextAreaField('Tell us more about yourself!',
                         validators=[Optional()])
-    image_url = StringField('Profile Photo URL', validators=[
-        Optional(), URL()])
-    header_image_url = StringField('Header Image URL', validators=[
-        Optional(), URL()])
+    image_url = StringField('Profile Photo URL', validators=[Optional()])
+    header_image_url = StringField('Header Image URL', validators=[Optional()])
     password = PasswordField('Password', validators=[Length(min=6)])
 
 
