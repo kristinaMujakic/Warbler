@@ -79,7 +79,7 @@ def signup():
             )
             db.session.commit()
 
-        except IntegrityError:
+        except IntegrityError as e:
             flash("Username already taken", 'danger')
             return render_template('users/signup.html', form=form)
 
@@ -379,12 +379,19 @@ def homepage():
         return render_template('home-anon.html')
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    '''404 NOT FOUND page'''
+
+    return render_template('404.html'), 404
+
 ##############################################################################
 # Turn off all caching in Flask
 #   (useful for dev; in production, this kind of stuff is typically
 #   handled elsewhere)
 #
 # https://stackoverflow.com/questions/34066804/disabling-caching-in-flask
+
 
 @app.after_request
 def add_header(req):
