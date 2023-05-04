@@ -5,6 +5,7 @@
 #    FLASK_ENV=production python -m unittest test_message_views.py
 
 
+from app import app, CURR_USER_KEY
 import os
 from unittest import TestCase
 
@@ -20,13 +21,12 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
 # Now we can import app
 
-from app import app, CURR_USER_KEY
 
 # Create our tables (we do this here, so we only create the tables
 # once for all tests --- in each test, we'll delete the data
 # and create fresh new clean test data
-
-db.create_all()
+with app.app_context():
+    db.create_all()
 
 # Don't have WTForms use CSRF at all, since it's a pain to test
 
@@ -39,8 +39,12 @@ class MessageViewTestCase(TestCase):
     def setUp(self):
         """Create test client, add sample data."""
 
-        User.query.delete()
-        Message.query.delete()
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
+
+        # User.query.delete()
+        # Message.query.delete()
 
         self.client = app.test_client()
 
@@ -71,3 +75,38 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+
+def test_add_no_session(self):
+    with self.client as c:
+        resp = c.post("/messages/new",
+                      data={"text": "Hello"}, follow_redirects=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Access unauthorized", str(resp.data))
+
+    def test_invalid_message_show(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            resp = c.get('/messages/99999999')
+
+            self.assertEqual(resp.status_code, 404)
+
+    def test_message_delete_no_authentication(self):
+
+        m = Message(
+            id=1234,
+            text="a test message",
+            user_id=self.testuser_id
+        )
+        db.session.add(m)
+        db.session.commit()
+
+        with self.client as c:
+            resp = c.post("/messages/1234/delete", follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", str(resp.data))
+
+            m = Message.query.get(1234)
+            self.assertIsNotNone(m)
